@@ -2,6 +2,9 @@ pipeline {
     agent {
         docker { image 'python:2-alpine' }
     }
+    options {
+        skipStagesAfterUnstable()
+    }
     stages {
         stage('Build') { 
             steps {
@@ -24,5 +27,20 @@ pipeline {
                 }
             }
         }   
+        stage('Deliver') {
+            agent {
+                docker {
+                    image 'cdrx/pyinstaller-linux:python2'
+                }
+            }
+            steps {
+                sh '/root/.pyenv/shims/pyinstaller --onefile sources/add2vals.py'
+            }
+            post {
+                success {
+                    archiveArtifacts 'dist/add2vals'
+                }
+            }
+        }
     }
 }
